@@ -2,7 +2,8 @@ import Teams from '../models/Teams.js';
 
 export const getTeams = async (req, res) => {
   try {
-    res.status(200).json('get all teams');
+    const teams = await Teams.find();
+    res.status(200).json(teams);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
