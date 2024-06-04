@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import connectDb from './config/connectDb.js';
 import teamsRouter from './routes/teams.js';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(morgan('dev'));
 
 app.use('/api/v1', teamsRouter);
+app.use('/api/v1', authRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
