@@ -1,7 +1,8 @@
 import express from 'express';
-import { addAccount } from '../controllers/auth.js';
+import { addAccount, getAccounts } from '../controllers/auth.js';
 const router = express.Router();
 
+router.get('/account', getAccounts);
 router.post('/account', addAccount);
 
 export default router;
