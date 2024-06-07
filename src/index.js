@@ -16,7 +16,12 @@ app.use(morgan('dev'));
 // config body-parser
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
-app.use(cors());
+app.use(
+  cors({
+    origin: 'http://localhost:4200', // URL của ứng dụng Angular
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 
 app.use('/api/v1', teamsRouter);

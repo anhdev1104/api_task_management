@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 const middlewareToken = {
   verifyToken: (req, res, next) => {
-    const accessToken = req.header['Authorization'].split(' ')[1];
+    const accessToken = req.header['authorization'].split(' ')[1];
     if (accessToken) {
       jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
         if (err) return res.status(403).json({ message: 'Token không hợp lệ !' });

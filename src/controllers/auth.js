@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import Account from '../models/Account.js';
 import Teams from '../models/Teams.js';
 import { generateAccessToken, generateRefreshToken } from '../services/jwtService.js';
@@ -85,15 +86,38 @@ export const loginAccount = async (req, res) => {
     if (account && validPassword) {
       const accessToken = generateAccessToken(account);
       const refreshToken = generateRefreshToken(account);
-      console.log('🚀 ~ loginAccount ~ refreshToken:', refreshToken);
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true, // Chỉ có thể truy cập thông qua HTTP,
-        secure: false,
-        sameSite: 'strict',
-      });
+      // res.cookie('refreshToken', refreshToken, {
+      //   httpOnly: true,
+      //   path: '/',
+      //   secure: false, // Chuyển thành true khi trên production
+      //   sameSite: 'strict',
+      //   maxAge: 1000 * 60 * 60 * 24 * 30,
+      // });
       return res.status(200).json({ accessToken, refreshToken });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const profileAccount = async (req, res) => {
+  const token = req.headers['authorization'];
+  if (token) {
+    const accessToken = token.split(' ')[1];
+    return jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, async (err, decoded) => {
+      if (err) {
+        return res.status(401).send('Token không hợp lệ !');
+      }
+      const user = await Account.findById(decoded.id);
+      if (!user) {
+        return res.status(404).send('Không tìm thấy người dùng !');
+      }
+      const { password, ...userData } = user._doc; // Tách mật khẩu nhằm tăng tính bảo mật
+      return res.status(200).json({
+        ...userData,
+      });
+    });
+  } else {
+    return res.status(401).send('Bạn chưa xác thực !');
   }
 };
