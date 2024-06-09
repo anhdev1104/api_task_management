@@ -7,6 +7,7 @@ import {
   deleteAccount,
   loginAccount,
   profileAccount,
+  requestRefreshToken,
 } from '../controllers/auth.js';
 import middlewareToken from '../middlewares/middlewareToken.js';
 const router = express.Router();
@@ -19,5 +20,6 @@ router.delete('/account/:id', middlewareToken.verifyToken, deleteAccount);
 
 router.post('/login', loginAccount);
 router.get('/profile', profileAccount);
+router.get('/refresh', requestRefreshToken);
 
 export default router;

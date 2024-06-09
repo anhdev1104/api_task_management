@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 8081;
 
 connectDb(process.env.MONGODB_URI);
 app.use(morgan('dev'));
+app.use(cookieParser());
 // config body-parser
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
@@ -22,7 +23,6 @@ app.use(
     credentials: true,
   })
 );
-app.use(cookieParser());
 
 app.use('/api/v1', teamsRouter);
 app.use('/api/v1', authRouter);

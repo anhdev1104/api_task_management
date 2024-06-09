@@ -67,7 +67,7 @@ export const deleteAccount = async (req, res) => {
   try {
     await Teams.updateMany({ members: req.params.id }, { $pull: { members: req.params.id } });
     await Account.findByIdAndDelete(req.params.id);
-    res.status(200).json('Xoá thành công !');
+    res.status(200).json({ message: 'Xoá thành công !' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -86,15 +86,33 @@ export const loginAccount = async (req, res) => {
     if (account && validPassword) {
       const accessToken = generateAccessToken(account);
       const refreshToken = generateRefreshToken(account);
-      // res.cookie('refreshToken', refreshToken, {
-      //   httpOnly: true,
-      //   path: '/',
-      //   secure: false, // Chuyển thành true khi trên production
-      //   sameSite: 'strict',
-      //   maxAge: 1000 * 60 * 60 * 24 * 30,
-      // });
+      // Lưu refreshToken
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: false, // Chuyển thành true khi trên production
+        sameSite: 'strict',
+      });
       return res.status(200).json({ accessToken, refreshToken });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const requestRefreshToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    console.log('🚀 ~ requestRefreshToken ~ refreshToken:', refreshToken);
+    if (!refreshToken) return res.status(401).json({ message: 'Bạn chưa xác thực !' });
+    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+      if (err) {
+        console.log(err);
+      }
+      // create new accessToken
+      const newAccessToken = generateAccessToken(user);
+
+      res.status(200).json({ accessToken: newAccessToken });
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -106,11 +124,11 @@ export const profileAccount = async (req, res) => {
     const accessToken = token.split(' ')[1];
     return jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, async (err, decoded) => {
       if (err) {
-        return res.status(401).send('Token không hợp lệ !');
+        return res.status(401).send({ message: 'Token không hợp lệ !' });
       }
       const user = await Account.findById(decoded.id);
       if (!user) {
-        return res.status(404).send('Không tìm thấy người dùng !');
+        return res.status(404).send({ message: 'Không tìm thấy người dùng !' });
       }
       const { password, ...userData } = user._doc; // Tách mật khẩu nhằm tăng tính bảo mật
       return res.status(200).json({
@@ -118,6 +136,6 @@ export const profileAccount = async (req, res) => {
       });
     });
   } else {
-    return res.status(401).send('Bạn chưa xác thực !');
+    return res.status(401).send({ message: 'Bạn chưa xác thực !' });
   }
 };
