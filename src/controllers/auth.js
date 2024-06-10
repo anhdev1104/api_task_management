@@ -48,16 +48,21 @@ export const addAccount = async (req, res) => {
 export const updateAccount = async (req, res) => {
   try {
     const account = await Account.findById(req.params.id);
-    await account.updateOne({ $set: req.body });
-    if (req.body.team) {
-      const team = await Teams.findById(req.body.team);
-      if (team) {
-        await team.updateOne({ $push: { members: account._id } });
-      } else {
-        return res.status(404).json({ error: 'Team not found' });
-      }
+    const oldTeamId = account.team;
+
+    if (oldTeamId !== req.body.team) {
+      // 1. Cập nhật account với team mới
+      const updatedAccount = await Account.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      // 2. Xóa account cũ khỏi danh sách của teams cũ
+      await Teams.findByIdAndUpdate(oldTeamId, { $pull: { members: req.params.id } });
+      // 3. Thêm account vào danh sách account mới của teams mới
+      await Teams.findByIdAndUpdate(req.body.team, { $addToSet: { members: req.params.id } });
+      return res.status(200).json(updatedAccount);
+    } else {
+      // Nếu team mới trùng với team cũ, chỉ cần cập nhật thông tin account
+      const updatedAccount = await Account.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      return res.status(200).json(updatedAccount);
     }
-    res.status(200).json('Cập nhập thành công !');
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -126,7 +131,7 @@ export const profileAccount = async (req, res) => {
       if (err) {
         return res.status(401).send({ message: 'Token không hợp lệ !' });
       }
-      const user = await Account.findById(decoded.id);
+      const user = await Account.findById(decoded.id).populate('team');
       if (!user) {
         return res.status(404).send({ message: 'Không tìm thấy người dùng !' });
       }
