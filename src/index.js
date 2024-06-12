@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import connectDb from './config/connectDb.js';
 import teamsRouter from './routes/teams.js';
 import authRouter from './routes/auth.js';
+import projectRouter from './routes/project.js';
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use(
 
 app.use('/api/v1', teamsRouter);
 app.use('/api/v1', authRouter);
+app.use('/api/v1', projectRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}/api/v1`);
