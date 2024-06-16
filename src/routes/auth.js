@@ -8,6 +8,7 @@ import {
   loginAccount,
   profileAccount,
   requestRefreshToken,
+  userLogout,
 } from '../controllers/auth.js';
 import middlewareToken from '../middlewares/middlewareToken.js';
 const router = express.Router();
@@ -22,4 +23,5 @@ router.post('/login', loginAccount);
 router.get('/profile', profileAccount);
 router.get('/refresh', requestRefreshToken);
 
+router.get('/logout', userLogout);
 export default router;
